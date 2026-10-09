@@ -1,0 +1,191 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import PageHero from "../components/PageHero.jsx";
+import FilterChips from "../components/gallery/FilterChips.jsx";
+import LookCard from "../components/gallery/LookCard.jsx";
+import LookViewer from "../components/gallery/LookViewer.jsx";
+import { fetchLooks } from "../api/looks.js";
+import { categoryOrder } from "../data/looks.js";
+
+const ALL = "All looks";
+
+export default function Gallery() {
+  const [looks, setLooks]     = useState([]);
+  const [status, setStatus]   = useState("loading");
+  const [filter, setFilter]   = useState(ALL);
+  const [applied, setApplied] = useState(ALL);
+  const [swapping, setSwapping] = useState(false);
+  const [activeId, setActiveId] = useState(null);
+  const [dir, setDir]         = useState("next");
+  const gridRef   = useRef(null);
+  const viewerRef = useRef(null);
+  const timer     = useRef();
+
+  // Data load karo
+  const load = useCallback(async () => {
+    setStatus("loading");
+    try {
+      const data = await fetchLooks();
+      setLooks(data);
+      setActiveId(data[0]?.id ?? null);
+      setStatus("ready");
+    } catch (err) {
+      console.error("Gallery load error:", err);
+      setStatus("error");
+    }
+  }, []);
+
+  // useEffect(() => {
+  //   load();
+  //   return () => clearTimeout(timer.current);
+  // }, [load]);
+  // ✅ Proper useEffect syntax
+useEffect(() => {
+  // Sync function ke andar async function call karein
+  load();
+
+  return () => {
+    if (timer.current) clearTimeout(timer.current);
+  };
+}, [load]);
+
+  // Categories list
+  const categories = useMemo(() => {
+    const found = [...new Set(looks.map((l) => l.category))];
+    const ordered = [
+      ...categoryOrder.filter((c) => found.includes(c)),
+      ...found.filter((c) => !categoryOrder.includes(c)),
+    ];
+    return [ALL, ...ordered];
+  }, [looks]);
+
+  // Filtered list
+  const list = useMemo(
+    () => (applied === ALL ? looks : looks.filter((l) => l.category === applied)),
+    [looks, applied]
+  );
+
+  const found = list.findIndex((l) => l.id === activeId);
+  const index = found < 0 ? 0 : found;
+  const current = list[index] ?? null;
+
+  // Filter change with fade transition
+  const choose = (c) => {
+    if (c === filter) return;
+    setFilter(c);
+    setSwapping(true);
+    clearTimeout(timer.current);
+    timer.current = setTimeout(() => {
+      const next = c === ALL ? looks : looks.filter((l) => l.category === c);
+      setApplied(c);
+      setActiveId(next[0]?.id ?? null);
+      setDir("next");
+      setSwapping(false);
+    }, 240);
+  };
+
+  const go = useCallback(
+    (step) => {
+      if (list.length < 2) return;
+      const n = (index + step + list.length) % list.length;
+      setDir(step > 0 ? "next" : "prev");
+      setActiveId(list[n].id);
+    },
+    [list, index]
+  );
+
+  const onPrev = useCallback(() => go(-1), [go]);
+  const onNext = useCallback(() => go(1), [go]);
+
+  const select = (id) => {
+    const i = list.findIndex((l) => l.id === id);
+    setDir(i >= index ? "next" : "prev");
+    setActiveId(id);
+    viewerRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  };
+
+  return (
+    <>
+    
+      <PageHero
+        center
+        eyebrow="The Saanjh portfolio"
+        title="A little glimpse of forever."
+        text="Explore the luminous details, soft rituals and personal beauty stories created for Saanjh brides across every celebration."
+      >
+        {status === "ready" && (
+          <FilterChips items={categories} value={filter} onChange={choose} />
+        )}
+      </PageHero>
+
+      <div className="divider container" aria-hidden><span>❧</span></div>
+
+      <section className="section looks-section" ref={gridRef}>
+        <div className="container">
+
+          {/* Loading skeletons */}
+          {status === "loading" && (
+            <div className="looks-grid">
+              {[...Array(8)].map((_, i) => (
+                <div key={i} className="look-skel" />
+              ))}
+            </div>
+          )}
+
+          {/* Error state */}
+          {status === "error" && (
+            <div className="state">
+              <p>Looks could not be loaded right now.</p>
+              <button className="btn btn-outline btn-sm" onClick={load}>Try again</button>
+            </div>
+          )}
+
+          {/* Empty state */}
+          {status === "ready" && list.length === 0 && (
+            <div className="state"><p>New looks are coming soon.</p></div>
+          )}
+
+          {/* Cards grid */}
+          {status === "ready" && list.length > 0 && (
+            <div key={applied} className={`looks-grid ${swapping ? "out" : ""}`}>
+              {list.map((l, i) => (
+                <LookCard
+                  key={l.id}
+                  look={l}
+                  index={i}
+                  active={l.id === current?.id}
+                  onSelect={select}
+                />
+              ))}
+            </div>
+          )}
+
+        </div>
+      </section>
+
+      {/* In-focus viewer */}
+      {status === "ready" && current && (
+        <section className="band focus" ref={viewerRef}>
+          <div className="container">
+            <div className="section-head center">
+              <div>
+                <p className="eyebrow">In focus</p>
+                <h2 className="h2">A closer look at {current.bride}'s ceremony glow.</h2>
+              </div>
+            </div>
+            <LookViewer
+              look={current}
+              index={index}
+              total={list.length}
+              dir={dir}
+              onPrev={onPrev}
+              onNext={onNext}
+              onClose={() =>
+                gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
+              }
+            />
+          </div>
+        </section>
+      )}
+    </>
+  );
+}

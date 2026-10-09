@@ -1,0 +1,88 @@
+import { useCallback, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
+import PageHero from "../components/PageHero.jsx";
+import SectionHeading from "../components/SectionHeading.jsx";
+import Reveal from "../components/Reveal.jsx";
+import PackageCard from "../components/services/PackageCard.jsx";
+import CompareTable from "../components/services/CompareTable.jsx";
+import Faq from "../components/services/Faq.jsx";
+import { fetchServices } from "../api/services.js";
+import "../styles/services.css";
+
+export default function Services() {
+  const [data, setData] = useState(null);
+  const [status, setStatus] = useState("loading"); // loading | ready | error
+
+  const load = useCallback(() => {
+    setStatus("loading");
+    fetchServices()
+      .then((d) => { setData(d); setStatus("ready"); })
+      .catch(() => setStatus("error"));
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  return (
+    <>
+      <PageHero
+        center
+        eyebrow="The Saanjh bridal menu"
+        title="Beauty plans for every beautiful chapter."
+        text="Choose the artistry that meets your celebration. Every Saanjh booking begins with a thoughtful conversation about your vision, rituals and personal glow."
+      />
+      <div className="divider container" aria-hidden><span>❧</span></div>
+
+      {/* PACKAGES */}
+      <section className="section pkg-section">
+        <div className="container">
+          {status === "loading" && <div className="pkg-grid">{[...Array(4)].map((_, i) => <div key={i} className="pkg-skel" />)}</div>}
+          {status === "error" && (
+            <div className="state">
+              <p>Packages could not be loaded right now.</p>
+              <button className="btn btn-outline btn-sm" onClick={load}>Try again</button>
+            </div>
+          )}
+          {status === "ready" && (
+            <>
+              <div className="pkg-grid">
+                {data.packages.map((p, i) => <PackageCard key={p.id} pkg={p} index={i} />)}
+              </div>
+              {data.note && <p className="pkg-note">{data.note}</p>}
+            </>
+          )}
+        </div>
+      </section>
+
+      {status === "ready" && (
+        <>
+          {/* COMPARISON */}
+          <section className="band">
+            <div className="container">
+              <SectionHeading eyebrow="At a glance" title="Find your perfect Saanjh service.">
+                <p className="head-note">All packages are thoughtfully tailored after a short consultation.</p>
+              </SectionHeading>
+              <Reveal>
+                <CompareTable packages={data.packages} features={data.comparisonFeatures} />
+              </Reveal>
+            </div>
+          </section>
+
+          {/* FAQ */}
+          <section className="section">
+            <div className="container faq-layout">
+              <Reveal>
+                <p className="eyebrow">Before you book</p>
+                <h2 className="h2">A calm start to<br />every beauty story.</h2>
+                <p className="faq-intro">The practical details, answered with care. For anything more personal, our bridal concierge is only a message away.</p>
+                <Link to="/booking" className="btn btn-outline btn-sm">Ask about your date <ArrowRight size={14} /></Link>
+              </Reveal>
+              <Reveal delay={120}>
+                <Faq items={data.faqs} />
+              </Reveal>
+            </div>
+          </section>
+        </>
+      )}
+    </>
+  );
+}

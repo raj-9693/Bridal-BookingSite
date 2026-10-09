@@ -1,0 +1,72 @@
+/* Services page ka poora CSS (Services.jsx isko import karta hai) */
+
+/* chhote shared rules (global.css me pehle se ho to bhi koi dikkat nahi) */
+.page-hero.center .h1 { max-width: 820px; margin-inline: auto; text-wrap: balance; }
+.cta-title { max-width: 780px; white-space: pre-line; }
+.state { text-align: center; display: grid; justify-items: center; gap: 16px; padding: 40px 0 60px; }
+@keyframes shimmer { to { background-position: -200% 0; } }
+
+/* ================= SERVICES PAGE ================= */
+.pkg-section { padding-top: 56px; padding-bottom: 80px; }
+.pkg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; align-items: stretch; padding: 16px 0; }
+.pkg { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); animation: rise .8s var(--ease) backwards; animation-delay: calc(var(--i) * 90ms); transition: transform .45s var(--ease), box-shadow .45s var(--ease); }
+.pkg:hover { transform: translateY(-6px); box-shadow: var(--shadow-h); }
+.pkg.pop { margin: -16px 0; border: 2px solid var(--gold-soft); box-shadow: var(--shadow-h); }
+.pkg-img { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--blush); }
+.pkg-img img, .pkg-img .photo-ph { width: 100%; height: 100%; object-fit: cover; transition: transform .9s var(--ease); }
+.pkg:hover .pkg-img img { transform: scale(1.06); }
+.pkg-badge { position: absolute; top: 16px; left: 50%; transform: translateX(-50%); background: #a87a2e; color: #fbeed7; font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; padding: 7px 14px; border-radius: 6px; white-space: nowrap; box-shadow: 0 6px 14px rgba(168, 116, 44, .35); }
+.pkg-body { display: flex; flex-direction: column; flex: 1; padding: 22px 22px 24px; }
+.pkg.pop .pkg-body { padding-bottom: 38px; }
+.pkg-tag { font-size: 10px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase; color: var(--gold); }
+.pkg-name { font-size: 28px; margin-top: 8px; }
+.pkg-price { margin-top: 12px; }
+.pkg-price b { font-family: var(--serif); font-weight: 500; font-size: 28px; color: var(--ink); }
+.pkg-price small { font-size: 12px; margin-left: 4px; }
+.pkg-list { display: grid; gap: 12px; margin: 20px 0 26px; font-size: 13px; }
+.pkg-list li { display: flex; align-items: center; gap: 10px; }
+.pkg-list svg { color: var(--gold); flex: none; }
+.pkg-btn { width: 100%; justify-content: center; margin-top: auto; padding: 13px 20px; }
+.pkg-note { text-align: center; font-size: 12px; margin-top: 34px; }
+.pkg-skel { min-height: 440px; border-radius: 12px; background: linear-gradient(100deg, var(--blush) 30%, #fbefe6 50%, var(--blush) 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
+
+.head-note { max-width: 290px; font-size: 13px; padding-bottom: 6px; }
+.cmp-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+.cmp { width: 100%; min-width: 760px; border-collapse: collapse; }
+.cmp th, .cmp td { text-align: left; padding: 15px 24px; font-size: 13px; }
+.cmp thead th { background: #f3e4d7; font-family: var(--serif); font-weight: 500; font-size: 19px; color: var(--ink); padding-block: 18px; }
+.cmp thead th.cmp-first { font-family: var(--sans); font-size: 10.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; width: 32%; }
+.cmp tbody th { font-weight: 600; color: var(--ink); }
+.cmp tbody tr { background: #fff; transition: background .25s; }
+.cmp tbody tr:nth-child(even) { background: #faf3ec; }
+.cmp tbody tr:hover { background: #f7ece2; }
+.cmp .pop { background: var(--sand) !important; }
+.cmp .tick { display: inline-flex; color: var(--gold); }
+.cmp .dash { color: #c9b5ae; }
+.cmp .total th, .cmp .total td { font-weight: 700; color: var(--ink); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+.faq-layout { display: grid; grid-template-columns: 1fr 1.55fr; gap: 56px; align-items: start; }
+.faq-layout .h2 { margin-top: 2px; }
+.faq-intro { margin: 22px 0 28px; max-width: 360px; }
+.faq { background: #fff; border-radius: 12px; box-shadow: var(--shadow); padding: 6px 30px; }
+.faq-item + .faq-item { border-top: 1px solid var(--line); }
+.faq-q { width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 20px; background: none; border: 0; padding: 24px 0; text-align: left; font-family: var(--serif); font-size: 22px; font-weight: 500; color: var(--ink); }
+.faq-q svg { color: var(--gold); flex: none; transition: transform .3s var(--ease); }
+.faq-q:hover svg { transform: scale(1.15); }
+.faq-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .45s var(--ease); }
+.faq-a > div { overflow: hidden; }
+.faq-item.open .faq-a { grid-template-rows: 1fr; }
+.faq-a p { font-size: 13.5px; padding: 0 0 24px; opacity: 0; transform: translateY(-4px); transition: opacity .4s .1s, transform .4s .1s var(--ease); }
+.faq-item.open .faq-a p { opacity: 1; transform: none; }
+
+@media (max-width: 1020px) {
+  .pkg-grid { grid-template-columns: repeat(2, 1fr); gap: 22px; padding: 0; }
+  .pkg.pop { margin: 0; }
+  .faq-layout { grid-template-columns: 1fr; gap: 36px; }
+}
+@media (max-width: 560px) {
+  .pkg-grid { grid-template-columns: 1fr; }
+  .faq { padding: 4px 20px; } .faq-q { font-size: 19px; padding: 20px 0; }
+  .cmp th, .cmp td { padding: 13px 16px; }
+}

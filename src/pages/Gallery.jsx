@@ -3,30 +3,60 @@ import PageHero from "../components/PageHero.jsx";
 import FilterChips from "../components/gallery/FilterChips.jsx";
 import LookCard from "../components/gallery/LookCard.jsx";
 import LookViewer from "../components/gallery/LookViewer.jsx";
-import { fetchLooks } from "../api/looks.js";
-import { categoryOrder } from "../data/looks.js";
-
-const ALL = "All looks";
+import { getDetagallery } from "../../src/api/Apiclients/GalleryClients.js"; // naya API function (neeche diya hai)
 
 export default function Gallery() {
-  const [looks, setLooks]     = useState([]);
-  const [status, setStatus]   = useState("loading");
-  const [filter, setFilter]   = useState(ALL);
-  const [applied, setApplied] = useState(ALL);
+  const [data, setData] = useState(null); // server ka poora gallery data (intro, filters, items, focus)
+  const [looks, setLooks] = useState([]);
+  const [allLabel, setAllLabel] = useState("All looks"); // server se aayega (filters.allLabel)
+  const [status, setStatus] = useState("loading");
+  const [filter, setFilter] = useState("All looks");
+  const [applied, setApplied] = useState("All looks");
   const [swapping, setSwapping] = useState(false);
   const [activeId, setActiveId] = useState(null);
-  const [dir, setDir]         = useState("next");
-  const gridRef   = useRef(null);
+  const [dir, setDir] = useState("next");
+  const gridRef = useRef(null);
   const viewerRef = useRef(null);
-  const timer     = useRef();
+  const timer = useRef();
 
-  // Data load karo
+  // Server se data laao
   const load = useCallback(async () => {
     setStatus("loading");
     try {
-      const data = await fetchLooks();
-      setLooks(data);
-      setActiveId(data[0]?.id ?? null);
+      const response = await getDetagallery()
+      const server=response?.data?.Gallery
+
+
+      // Server mein item.category ek id hai ('c1'). Use label mein badlo ('Bridal Makeup'),
+      // taaki LookCard, LookViewer aur filter ka baaki code waisa hi chale jaisa pehle tha.
+      const labelById = Object.fromEntries(
+        (server.filters?.categories ?? []).map((c) => [c.id, c.label])
+      );
+
+      const items = (server.items ?? [])
+        .filter((item) => item.published !== false) // sirf published looks
+        .map((item) => {
+          const catLabel = labelById[item.category] ?? item.category;
+          return {
+            ...item,
+            category: catLabel,
+            label: catLabel, // LookCard ka <small>{look.label}</small> ke liye
+            // LookViewer look.services.join(" · ") chalata hai, isliye details ki string ko array banao
+            services: (item.details ?? "").split(" · ").filter(Boolean),
+          };
+        });
+
+      const all = server.filters?.allLabel || "All looks";
+
+      setData(server);
+      setLooks(items);
+      setAllLabel(all);
+      setFilter(all);
+      setApplied(all);
+      // Shuru mein wahi look jo server ke focus.itemId mein hai, warna pehla look
+      setActiveId(
+        items.find((i) => i.id === server.focus?.itemId)?.id ?? items[0]?.id ?? null
+      );
       setStatus("ready");
     } catch (err) {
       console.error("Gallery load error:", err);
@@ -34,48 +64,38 @@ export default function Gallery() {
     }
   }, []);
 
-  // useEffect(() => {
-  //   load();
-  //   return () => clearTimeout(timer.current);
-  // }, [load]);
-  // ✅ Proper useEffect syntax
-useEffect(() => {
-  // Sync function ke andar async function call karein
-  load();
+  useEffect(() => {
+    load();
+    return () => {
+      if (timer.current) clearTimeout(timer.current);
+    };
+  }, [load]);
 
-  return () => {
-    if (timer.current) clearTimeout(timer.current);
-  };
-}, [load]);
-
-  // Categories list
+  // Filter chips: server ke categories ka order, sirf wahi jinme looks hain
   const categories = useMemo(() => {
-    const found = [...new Set(looks.map((l) => l.category))];
-    const ordered = [
-      ...categoryOrder.filter((c) => found.includes(c)),
-      ...found.filter((c) => !categoryOrder.includes(c)),
-    ];
-    return [ALL, ...ordered];
-  }, [looks]);
+    const order = (data?.filters?.categories ?? []).map((c) => c.label);
+    const used = new Set(looks.map((l) => l.category));
+    return [allLabel, ...order.filter((label) => used.has(label))];
+  }, [data, looks, allLabel]);
 
-  // Filtered list
+  // Filter ke hisaab se list
   const list = useMemo(
-    () => (applied === ALL ? looks : looks.filter((l) => l.category === applied)),
-    [looks, applied]
+    () => (applied === allLabel ? looks : looks.filter((l) => l.category === applied)),
+    [looks, applied, allLabel]
   );
 
   const found = list.findIndex((l) => l.id === activeId);
   const index = found < 0 ? 0 : found;
   const current = list[index] ?? null;
 
-  // Filter change with fade transition
+  // Filter badalne par fade transition
   const choose = (c) => {
     if (c === filter) return;
     setFilter(c);
     setSwapping(true);
     clearTimeout(timer.current);
     timer.current = setTimeout(() => {
-      const next = c === ALL ? looks : looks.filter((l) => l.category === c);
+      const next = c === allLabel ? looks : looks.filter((l) => l.category === c);
       setApplied(c);
       setActiveId(next[0]?.id ?? null);
       setDir("next");
@@ -105,12 +125,14 @@ useEffect(() => {
 
   return (
     <>
-    
       <PageHero
         center
-        eyebrow="The Saanjh portfolio"
-        title="A little glimpse of forever."
-        text="Explore the luminous details, soft rituals and personal beauty stories created for Saanjh brides across every celebration."
+        eyebrow={data?.intro?.eyebrow ?? "The Saanjh portfolio"}
+        title={data?.intro?.title ?? "A little glimpse of forever."}
+        text={
+          data?.intro?.text ??
+          "Explore the luminous details, soft rituals and personal beauty stories created for Saanjh brides across every celebration."
+        }
       >
         {status === "ready" && (
           <FilterChips items={categories} value={filter} onChange={choose} />
@@ -168,8 +190,10 @@ useEffect(() => {
           <div className="container">
             <div className="section-head center">
               <div>
-                <p className="eyebrow">In focus</p>
-                <h2 className="h2">A closer look at {current.bride}'s ceremony glow.</h2>
+                <p className="eyebrow">{data?.focus?.eyebrow ?? "In focus"}</p>
+                <h2 className="h2">
+                  {data?.focus?.title ?? `A closer look at ${current.title}`}
+                </h2>
               </div>
             </div>
             <LookViewer

@@ -1,10 +1,36 @@
+import { useEffect, useRef } from "react";
 import { Check } from "lucide-react";
 
 const steps = ["Your service", "Event details", "About you"];
 
 export default function Stepper({ active, onGo }) {
+  const stepperRef = useRef(null);
+
+  useEffect(() => {
+    const container = stepperRef.current;
+    const current = container?.querySelector(".now");
+    if (!container || !current || container.scrollWidth <= container.clientWidth) return;
+
+    const containerBounds = container.getBoundingClientRect();
+    const currentBounds = current.getBoundingClientRect();
+    const left = currentBounds.left - containerBounds.left + container.scrollLeft;
+    const right = currentBounds.right - containerBounds.left + container.scrollLeft;
+
+    if (right > container.scrollLeft + container.clientWidth) {
+      container.scrollTo({ left: right - container.clientWidth, behavior: "smooth" });
+    } else if (left < container.scrollLeft) {
+      container.scrollTo({ left, behavior: "smooth" });
+    }
+  }, [active]);
+
   return (
-    <div className="stepper">
+    <div
+      className="stepper"
+      ref={stepperRef}
+      role="region"
+      aria-label="Booking progress; scroll horizontally to see all steps"
+      tabIndex={0}
+    >
       <ol>
         {steps.map((label, i) => {
           const n = i + 1;

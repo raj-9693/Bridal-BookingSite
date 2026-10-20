@@ -127,7 +127,7 @@ export default function Booking() {
           )}
 
           {status === "ready" && (
-            <div className="book-grid">
+            <div className={`book-grid${active === 3 ? " book-grid-step-three" : ""}`}>
               <div className="book-col" ref={stepsRef}>
                 <Stepper active={active} onGo={tryGo} />
 
@@ -211,7 +211,7 @@ export default function Booking() {
                       <label htmlFor="notes" className="fld-l">Anything you’d like us to know?</label>
                       <textarea id="notes" className="inp" rows="4" value={f.notes} onChange={set("notes")} placeholder="Your ceremonies, skin preferences, inspiration, or a note for the team…" />
                     </div>
-                    <div className="step-actions split">
+                    <div className="step-actions split step-actions-final">
                       <button type="button" className="btn btn-outline" onClick={() => goTo(2)}><ArrowLeft size={15} /> Back</button>
                       <button type="button" className="btn btn-primary" onClick={confirm} disabled={busy}>
                         <MessageCircle size={16} strokeWidth={1.8} /> {busy ? "Sending…" : "Confirm on WhatsApp"}

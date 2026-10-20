@@ -7,21 +7,59 @@ import Reveal from "../components/Reveal.jsx";
 import PackageCard from "../components/services/PackageCard.jsx";
 import CompareTable from "../components/services/CompareTable.jsx";
 import Faq from "../components/services/Faq.jsx";
-import { fetchServices } from "../api/services.js";
+import { getDetaServices } from "../api/Apiclients/ServicesClients.js";
 import "../styles/services.css";
 
 export default function Services() {
   const [data, setData] = useState(null);
   const [status, setStatus] = useState("loading"); // loading | ready | error
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setStatus("loading");
-    fetchServices()
-      .then((d) => { setData(d); setStatus("ready"); })
-      .catch(() => setStatus("error"));
-  }, []);
-  useEffect(() => { load(); }, [load]);
+    try {
+      const response = await getDetaServices();
+      const services = response?.data?.Services;
+      if (!services) throw new Error("Services data was missing from the response");
 
+      const serverPackages = services.packages?.items ?? services.packages ?? [];
+      const serverFaqs = services.faqs ?? services.faq?.items ?? [];
+      const packages = serverPackages.map((pkg, index) => ({
+        ...pkg,
+        id: pkg.id ?? pkg._id ?? index,
+        name: pkg.name ?? pkg.title ?? "Service package",
+        tagline: pkg.tagline ?? pkg.eyebrow ?? "",
+        priceNote: pkg.priceNote ?? "onwards",
+        features: Array.isArray(pkg.features)
+          ? pkg.features
+          : typeof pkg.features === "string"
+            ? pkg.features.split(/\r?\n/).map((feature) => feature.trim()).filter(Boolean)
+            : [],
+      }));
+
+      setData({
+        ...services,
+        packages,
+        comparisonFeatures: services.comparisonFeatures ?? services.compare?.features ?? [],
+        faqs: (Array.isArray(serverFaqs) ? serverFaqs : []).map((item, index) => ({
+          ...item,
+          id: item.id ?? `faq-${index}`,
+          question: item.question ?? item.q ?? "",
+          answer: item.answer ?? item.a ?? "",
+        })),
+      });
+      setStatus("ready");
+    } catch (error) {
+      console.error("Could not load services data", error);
+      setStatus("error");
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const hasComparison = data?.comparisonFeatures.length > 0
+    && data.packages.every((pkg) => Array.isArray(pkg.includes));
   return (
     <>
       <PageHero
@@ -53,7 +91,7 @@ export default function Services() {
         </div>
       </section>
 
-      {status === "ready" && (
+      {status === "ready" && hasComparison && (
         <>
           {/* COMPARISON */}
           <section className="band">
@@ -67,21 +105,22 @@ export default function Services() {
             </div>
           </section>
 
-          {/* FAQ */}
-          <section className="section">
-            <div className="container faq-layout">
-              <Reveal>
-                <p className="eyebrow">Before you book</p>
-                <h2 className="h2">A calm start to<br />every beauty story.</h2>
-                <p className="faq-intro">The practical details, answered with care. For anything more personal, our bridal concierge is only a message away.</p>
-                <Link to="/booking" className="btn btn-outline btn-sm">Ask about your date <ArrowRight size={14} /></Link>
-              </Reveal>
-              <Reveal delay={120}>
-                <Faq items={data.faqs} />
-              </Reveal>
-            </div>
-          </section>
         </>
+      )}
+      {status === "ready" && data.faqs.length > 0 && (
+        <section className="section">
+          <div className="container faq-layout">
+            <Reveal>
+              <p className="eyebrow">{data.faq?.eyebrow ?? "Before you book"}</p>
+              <h2 className="h2">A calm start to<br />every beauty story.</h2>
+              <p className="faq-intro">The practical details, answered with care. For anything more personal, our bridal concierge is only a message away.</p>
+              <Link to="/booking" className="btn btn-outline btn-sm">{data.faq?.button ?? "Ask about your date"} <ArrowRight size={14} /></Link>
+            </Reveal>
+            <Reveal delay={120}>
+              <Faq items={data.faqs} />
+            </Reveal>
+          </div>
+        </section>
       )}
     </>
   );

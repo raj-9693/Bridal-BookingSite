@@ -8,8 +8,8 @@
 
 /* ================= SERVICES PAGE ================= */
 .pkg-section { padding-top: 56px; padding-bottom: 80px; }
-.pkg-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 22px; align-items: stretch; padding: 16px 0; }
-.pkg { display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); animation: rise .8s var(--ease) backwards; animation-delay: calc(var(--i) * 90ms); transition: transform .45s var(--ease), box-shadow .45s var(--ease); }
+.pkg-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 22px; align-items: stretch; padding: 16px 0; }
+.pkg { min-width: 0; display: flex; flex-direction: column; background: #fff; border: 1px solid var(--line); border-radius: 12px; overflow: hidden; box-shadow: var(--shadow); animation: rise .8s var(--ease) backwards; animation-delay: calc(var(--i) * 90ms); transition: transform .45s var(--ease), box-shadow .45s var(--ease); }
 .pkg:hover { transform: translateY(-6px); box-shadow: var(--shadow-h); }
 .pkg.pop { margin: -16px 0; border: 2px solid var(--gold-soft); box-shadow: var(--shadow-h); }
 .pkg-img { position: relative; aspect-ratio: 4 / 3; overflow: hidden; background: var(--blush); }
@@ -31,7 +31,7 @@
 .pkg-skel { min-height: 440px; border-radius: 12px; background: linear-gradient(100deg, var(--blush) 30%, #fbefe6 50%, var(--blush) 70%); background-size: 200% 100%; animation: shimmer 1.4s linear infinite; }
 
 .head-note { max-width: 290px; font-size: 13px; padding-bottom: 6px; }
-.cmp-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
+.cmp-wrap { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; background: #fff; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); }
 .cmp { width: 100%; min-width: 760px; border-collapse: collapse; }
 .cmp th, .cmp td { text-align: left; padding: 15px 24px; font-size: 13px; }
 .cmp thead th { background: #f3e4d7; font-family: var(--serif); font-weight: 500; font-size: 19px; color: var(--ink); padding-block: 18px; }
@@ -46,7 +46,7 @@
 .cmp .total th, .cmp .total td { font-weight: 700; color: var(--ink); }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-.faq-layout { display: grid; grid-template-columns: 1fr 1.55fr; gap: 56px; align-items: start; }
+.faq-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.55fr); gap: 56px; align-items: start; }
 .faq-layout .h2 { margin-top: 2px; }
 .faq-intro { margin: 22px 0 28px; max-width: 360px; }
 .faq { background: #fff; border-radius: 12px; box-shadow: var(--shadow); padding: 6px 30px; }
@@ -61,12 +61,18 @@
 .faq-item.open .faq-a p { opacity: 1; transform: none; }
 
 @media (max-width: 1020px) {
-  .pkg-grid { grid-template-columns: repeat(2, 1fr); gap: 22px; padding: 0; }
+  .pkg-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; padding: 0; }
   .pkg.pop { margin: 0; }
   .faq-layout { grid-template-columns: 1fr; gap: 36px; }
 }
 @media (max-width: 560px) {
   .pkg-grid { grid-template-columns: 1fr; }
   .faq { padding: 4px 20px; } .faq-q { font-size: 19px; padding: 20px 0; }
-  .cmp th, .cmp td { padding: 13px 16px; }
+  .cmp { min-width: 0; table-layout: fixed; }
+  .cmp thead th { font-size: 14px; }
+  .cmp thead th.cmp-first { font-size: 9px; }
+  .cmp th, .cmp td { padding: 9px 5px; font-size: 11px; overflow-wrap: anywhere; }
+  .cmp thead th.cmp-first,
+  .cmp tbody th { width: 34%; }
+  .cmp .total td { font-size: 10px; }
 }

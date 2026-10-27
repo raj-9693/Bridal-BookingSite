@@ -1,13 +1,14 @@
 import { CircleCheck } from "lucide-react";
 import { formatPrice } from "../../utils/format.js";
 
-export default function CompareTable({ packages, features }) {
+// firstLabel / totalLabel admin se aate hain (Services → Comparison table)
+export default function CompareTable({ packages, features, firstLabel = "Included with your booking", totalLabel = "Starting investment" }) {
   return (
     <div className="cmp-wrap">
       <table className="cmp">
         <thead>
           <tr>
-            <th scope="col" className="cmp-first">Included with your booking</th>
+            <th scope="col" className="cmp-first">{firstLabel}</th>
             {packages.map((p) => (
               <th scope="col" key={p.id} className={p.popular ? "pop" : ""}>{p.name}</th>
             ))}
@@ -27,7 +28,7 @@ export default function CompareTable({ packages, features }) {
             </tr>
           ))}
           <tr className="total">
-            <th scope="row">Starting investment</th>
+            <th scope="row">{totalLabel}</th>
             {packages.map((p) => (
               <td key={p.id} className={p.popular ? "pop" : ""}>{formatPrice(p.price)}</td>
             ))}

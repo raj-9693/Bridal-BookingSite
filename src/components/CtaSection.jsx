@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import Reveal from "./Reveal.jsx";
+import Lines from "./Lines.jsx";
 
 // tone="dark" -> maroon box (Reviews page). Default "light" -> sand box.
 export default function CtaSection({
@@ -17,7 +18,7 @@ export default function CtaSection({
       <div className="container">
         <Reveal className={`cta ${dark ? "cta-dark" : ""}`}>
           <p className={`eyebrow ${dark ? "" : "dark"}`}>{eyebrow}</p>
-          <h2 className="cta-title">{title}</h2>
+          <h2 className="cta-title"><Lines text={title} /></h2>
           <p className="cta-text">{text}</p>
           <Link to={to} className={`btn ${dark ? "btn-light" : "btn-primary"}`}>
             {button} <ArrowRight size={16} />

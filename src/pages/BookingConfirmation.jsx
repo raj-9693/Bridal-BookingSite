@@ -1,8 +1,7 @@
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useOutletContext } from "react-router-dom";
 import { CircleCheck, Calendar, MapPin, Users, Sparkles, MessageCircle, ArrowUpRight, ArrowRight } from "lucide-react";
 import { confirmationDummy } from "../data/booking.js";
-import { brand } from "../data/content.js";
-import { formatPrice } from "../utils/format.js";
+import { fromPrice } from "../utils/format.js";
 import { formatLong } from "../utils/dates.js";
 import "../styles/booking.css";
 
@@ -16,6 +15,7 @@ const readSaved = () => {
 
 export default function BookingConfirmation() {
   const { state } = useLocation();
+  const { whatsapp } = useOutletContext() ?? {}; // Layout se: footer ka phone number (digits)
   const rec = (state?.reference ? state : readSaved()) || (DEMO_FALLBACK ? confirmationDummy : null);
 
   if (!rec) {
@@ -30,7 +30,7 @@ export default function BookingConfirmation() {
 
   const b = rec.booking;
   const first = (b.name || "").trim().split(/\s+/)[0] || "dear bride";
-  const wa = `https://wa.me/${brand.whatsapp}?text=${encodeURIComponent(
+  const wa = `https://wa.me/${whatsapp}?text=${encodeURIComponent(
     `Hi Saanjh! This is ${b.name}. I just sent an inquiry (${rec.reference}) for ${b.serviceName} on ${formatLong(b.date)}.`
   )}`;
 
@@ -58,7 +58,7 @@ export default function BookingConfirmation() {
               <div>
                 <p className="eyebrow">Your booking recap</p>
                 <h2>{b.serviceName}</h2>
-                <p className="recap-sub">{b.tagline} · From {formatPrice(b.price)}</p>
+                <p className="recap-sub">{b.tagline ? `${b.tagline} · ` : ""}{fromPrice(b.price)}</p>
               </div>
               <span className="pill">Pending confirmation</span>
             </div>

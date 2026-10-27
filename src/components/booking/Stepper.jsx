@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { Check } from "lucide-react";
 
-const steps = ["Your service", "Event details", "About you"];
-
-export default function Stepper({ active, onGo }) {
+// labels = 3 step ke naam (admin: Booking → Steps)
+export default function Stepper({ labels = ["Your service", "Event details", "About you"], active, onGo }) {
+  const steps = labels;
   const stepperRef = useRef(null);
 
   useEffect(() => {

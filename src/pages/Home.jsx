@@ -45,7 +45,7 @@ export default function Home() {
               <Link to="/gallery" className="btn btn-outline">{homedeta?.hero?.secondaryCta||"View looks"}</Link>
             </div>
             <dl className="stats">
-              {homedeta?.stats?.items.map((s) => (
+              {homedeta?.stats?.items?.map((s) => (
                 <div key={s.id}>
                   <dt>{s.value || ""}</dt>
                   <dd>{s.label|| ""}</dd>
@@ -58,7 +58,7 @@ export default function Home() {
             <div className="arch">
               <div className="arch">
             <Photo 
-               src={homedeta?.hero?.imageUrl || "/images/imagegirls.png"} 
+               src={homedeta?.hero?.image || homedeta?.hero?.imageUrl || "/images/imagegirls.png"} 
                 alt="Bride in a maroon lehenga"  />
               </div>
             </div>
@@ -79,7 +79,7 @@ export default function Home() {
             <Link to="/services" className="text-link">{homedeta?.basics?.linkText}<ArrowRight size={14} /></Link>
           </SectionHeading>
           <div className="grid-4">
-            {homedeta?.basics?.items.map((s, i) => (
+            {homedeta?.basics?.items?.map((s, i) => (
               <Reveal key={s.id} delay={i * 80} className="card service-card">
                 <Icon name={s.icon} />
                 <h3 className="h3">{s.title}</h3>
@@ -96,10 +96,10 @@ export default function Home() {
         <div className="container">
           <SectionHeading center eyebrow={homedeta?.glimpse?.eyebrow} title={homedeta?.glimpse?.title} />
           <div className="glimpse">
-            {homedeta?.glimpse?.items.slice(0, 3).map((g, i) => (
+            {homedeta?.glimpse?.items?.slice(0, 3).map((g, i) => (
               <Reveal key={g.id} delay={i * 100} className={`glimpse-card ${i === 1 ? "drop" : ""}`}>
                 <Photo src={g.image} alt={g.caption} />
-                <div className="glimpse-cap">{g.caption}</div>
+                <div className="glimpse-cap">{g.name ? `${g.name} · ${g.caption}` : g.caption}</div>
               </Reveal>
             ))}
           </div>
@@ -116,7 +116,7 @@ export default function Home() {
             <p className="rating"><span className="stars">{[...Array(5)].map((_, i) => <Star key={i} size={13} />)}</span> 4.9 from 200+ brides</p>
           </SectionHeading>
           <div className="grid-3">
-            {homedeta?.reviews?.items.slice(0, 3).map((r, i) => (
+            {homedeta?.reviews?.items?.slice(0, 3).map((r, i) => (
               <Reveal key={r.id} delay={i * 90} className="quote-card">
                 <span className="quote-mark">“</span>
                 <p className="quote-text">{r.quote}</p>
@@ -131,7 +131,7 @@ export default function Home() {
       <section className="section tight">
         <div className="container">
           <Reveal className="values">
-            {homedeta?.promises?.items.map((v) => (
+            {homedeta?.promises?.items?.map((v) => (
               <div key={v.id} className="value">
                 <Icon name={v.icon} />
                 <h3 className="h3 sm">{v.title}</h3>

@@ -4,6 +4,7 @@ import { ArrowRight } from "lucide-react";
 import PageHero from "../components/PageHero.jsx";
 import SectionHeading from "../components/SectionHeading.jsx";
 import Reveal from "../components/Reveal.jsx";
+import Lines from "../components/Lines.jsx";
 import PackageCard from "../components/services/PackageCard.jsx";
 import CompareTable from "../components/services/CompareTable.jsx";
 import Faq from "../components/services/Faq.jsx";
@@ -21,31 +22,32 @@ export default function Services() {
       const services = response?.data?.Services;
       if (!services) throw new Error("Services data was missing from the response");
 
-      const serverPackages = services.packages?.items ?? services.packages ?? [];
-      const serverFaqs = services.faqs ?? services.faq?.items ?? [];
-      const packages = serverPackages.map((pkg, index) => ({
-        ...pkg,
-        id: pkg.id ?? pkg._id ?? index,
-        name: pkg.name ?? pkg.title ?? "Service package",
-        tagline: pkg.tagline ?? pkg.eyebrow ?? "",
-        priceNote: pkg.priceNote ?? "onwards",
-        features: Array.isArray(pkg.features)
-          ? pkg.features
-          : typeof pkg.features === "string"
-            ? pkg.features.split(/\r?\n/).map((feature) => feature.trim()).filter(Boolean)
-            : [],
+      const rows = services.compare?.rows ?? [];
+
+      // Card ko sirf wahi data jo chahiye (props): name, price, features...
+      const packages = (services.packages?.items ?? []).map((item) => ({
+        id: item.id,
+        name: item.title,
+        tagline: item.eyebrow,
+        price: item.price,
+        priceNote: item.priceNote,
+        image: item.image,
+        popular: item.popular,
+        button: item.button,
+        features: String(item.features ?? "").split("\n").map((f) => f.trim()).filter(Boolean),
+        // comparison table: is package me kaun si rows included hain
+        includes: rows.filter((r) => r.inc?.[item.id]).map((r) => r.id),
       }));
 
       setData({
-        ...services,
+        hero: services.hero,
+        note: services.packages?.note,
+        badge: services.packages?.badge,
         packages,
-        comparisonFeatures: services.comparisonFeatures ?? services.compare?.features ?? [],
-        faqs: (Array.isArray(serverFaqs) ? serverFaqs : []).map((item, index) => ({
-          ...item,
-          id: item.id ?? `faq-${index}`,
-          question: item.question ?? item.q ?? "",
-          answer: item.answer ?? item.a ?? "",
-        })),
+        compare: services.compare,
+        comparisonFeatures: rows.map((r) => ({ key: r.id, label: r.label })),
+        faq: services.faq,
+        faqs: (services.faq?.items ?? []).map((f) => ({ id: f.id, question: f.q, answer: f.a })),
       });
       setStatus("ready");
     } catch (error) {
@@ -58,15 +60,15 @@ export default function Services() {
     load();
   }, [load]);
 
-  const hasComparison = data?.comparisonFeatures.length > 0
-    && data.packages.every((pkg) => Array.isArray(pkg.includes));
+  const hasComparison = data?.comparisonFeatures.length > 0;
+
   return (
     <>
       <PageHero
         center
-        eyebrow="The Saanjh bridal menu"
-        title="Beauty plans for every beautiful chapter."
-        text="Choose the artistry that meets your celebration. Every Saanjh booking begins with a thoughtful conversation about your vision, rituals and personal glow."
+        eyebrow={data?.hero?.eyebrow ?? "The Saanjh bridal menu"}
+        title={<Lines text={data?.hero?.title ?? "Beauty plans for every beautiful chapter."} />}
+        text={data?.hero?.text ?? "Choose the artistry that meets your celebration. Every Saanjh booking begins with a thoughtful conversation about your vision, rituals and personal glow."}
       />
       <div className="divider container" aria-hidden><span>❧</span></div>
 
@@ -83,7 +85,7 @@ export default function Services() {
           {status === "ready" && (
             <>
               <div className="pkg-grid">
-                {data.packages.map((p, i) => <PackageCard key={p.id} pkg={p} index={i} />)}
+                {data.packages.map((p, i) => <PackageCard key={p.id} pkg={p} badge={data.badge} index={i} />)}
               </div>
               {data.note && <p className="pkg-note">{data.note}</p>}
             </>
@@ -92,29 +94,33 @@ export default function Services() {
       </section>
 
       {status === "ready" && hasComparison && (
-        <>
-          {/* COMPARISON */}
-          <section className="band">
-            <div className="container">
-              <SectionHeading eyebrow="At a glance" title="Find your perfect Saanjh service.">
-                <p className="head-note">All packages are thoughtfully tailored after a short consultation.</p>
-              </SectionHeading>
-              <Reveal>
-                <CompareTable packages={data.packages} features={data.comparisonFeatures} />
-              </Reveal>
-            </div>
-          </section>
-
-        </>
+        <section className="band">
+          <div className="container">
+            <SectionHeading eyebrow={data.compare.eyebrow} title={data.compare.title}>
+              <p className="head-note">{data.compare.note}</p>
+            </SectionHeading>
+            <Reveal>
+              <CompareTable
+                packages={data.packages}
+                features={data.comparisonFeatures}
+                firstLabel={data.compare.tableLabel}
+                totalLabel={data.compare.priceRowLabel}
+              />
+            </Reveal>
+          </div>
+        </section>
       )}
+
       {status === "ready" && data.faqs.length > 0 && (
         <section className="section">
           <div className="container faq-layout">
             <Reveal>
-              <p className="eyebrow">{data.faq?.eyebrow ?? "Before you book"}</p>
-              <h2 className="h2">A calm start to<br />every beauty story.</h2>
-              <p className="faq-intro">The practical details, answered with care. For anything more personal, our bridal concierge is only a message away.</p>
-              <Link to="/booking" className="btn btn-outline btn-sm">{data.faq?.button ?? "Ask about your date"} <ArrowRight size={14} /></Link>
+              <p className="eyebrow">{data.faq.eyebrow}</p>
+              <h2 className="h2"><Lines text={data.faq.title} /></h2>
+              <p className="faq-intro">{data.faq.text}</p>
+              {data.faq.button && (
+                <Link to="/booking" className="btn btn-outline btn-sm">{data.faq.button} <ArrowRight size={14} /></Link>
+              )}
             </Reveal>
             <Reveal delay={120}>
               <Faq items={data.faqs} />

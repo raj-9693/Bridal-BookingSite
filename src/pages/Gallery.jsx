@@ -3,7 +3,7 @@ import PageHero from "../components/PageHero.jsx";
 import FilterChips from "../components/gallery/FilterChips.jsx";
 import LookCard from "../components/gallery/LookCard.jsx";
 import LookViewer from "../components/gallery/LookViewer.jsx";
-import { getDetagallery } from "../../src/api/Apiclients/GalleryClients.js"; // naya API function (neeche diya hai)
+import { getDetagallery } from "../api/Apiclients/GalleryClients.js";
 
 export default function Gallery() {
   const [data, setData] = useState(null); // server ka poora gallery data (intro, filters, items, focus)
@@ -203,6 +203,8 @@ export default function Gallery() {
               dir={dir}
               onPrev={onPrev}
               onNext={onNext}
+              detailsLabel={data?.focus?.detailsLabel}
+              buttonText={data?.focus?.buttonText}
               onClose={() =>
                 gridRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
               }

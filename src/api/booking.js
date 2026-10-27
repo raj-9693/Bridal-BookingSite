@@ -1,22 +1,9 @@
-import { bookingOptionsDummy } from "../data/booking.js";
-
-// .env me VITE_API_URL=https://your-server.com/api
-// URL nahi hoga to dummy data chalega.
+// POST /bookings  -> { reference }
+// (GET ab api/Apiclients/BookingClient.js se aata hai. POST abhi pehle jaisa hai.)
+// .env me VITE_API_URL=https://your-server.com/api ; URL nahi hoga to dummy reference banta hai.
 const API = import.meta.env.VITE_API_URL;
 const wait = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// GET /booking/options
-export async function fetchBookingOptions() {
-  if (API) {
-    const res = await fetch(`${API}/booking/options`);
-    if (!res.ok) throw new Error("Could not load booking options");
-    return res.json();
-  }
-  await wait(500);
-  return bookingOptionsDummy;
-}
-
-// POST /bookings  -> { reference }
 export async function submitBooking(payload) {
   if (API) {
     const res = await fetch(`${API}/bookings`, {

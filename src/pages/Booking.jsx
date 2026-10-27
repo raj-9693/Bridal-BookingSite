@@ -6,7 +6,9 @@ import ServiceOption from "../components/booking/ServiceOption.jsx";
 import Calendar from "../components/booking/Calendar.jsx";
 import Switch from "../components/booking/Switch.jsx";
 import BookingSummary from "../components/booking/BookingSummary.jsx";
-import { fetchBookingOptions, submitBooking } from "../api/booking.js";
+import Lines from "../components/Lines.jsx";
+import { getDetaBooking } from "../api/Apiclients/BookingClient.js";
+import { submitBooking } from "../api/booking.js"; // POST (abhi pehle jaisa)
 import "../styles/booking.css";
 
 const blank = { serviceId: "", date: "", venue: "", guests: "", trial: false, name: "", phone: "", notes: "" };
@@ -24,17 +26,32 @@ export default function Booking() {
   const [dir, setDir] = useState("next");
   const stepsRef = useRef(null);
 
-  const load = useCallback(() => {
+  const load = useCallback(async () => {
     setStatus("loading");
-    fetchBookingOptions()
-      .then((d) => {
-        setOpts(d);
-        const wanted = state?.service?.toLowerCase();
-        const match = d.services.find((s) => s.name.toLowerCase() === wanted) || d.services[0];
-        setF((p) => ({ ...p, serviceId: p.serviceId || match?.id || "" }));
-        setStatus("ready");
-      })
-      .catch(() => setStatus("error"));
+    try {
+      const response = await getDetaBooking();
+      const booking = response?.data?.Booking;
+      if (!booking) throw new Error("Booking data was missing from the response");
+
+      // Service card ko sirf wahi data jo chahiye (props): name, summary, price, icon
+      const services = (booking.services ?? []).map((item) => ({
+        id: item.id,
+        name: item.title,
+        summary: item.desc,
+        price: item.price,
+        icon: item.icon,
+      }));
+      const d = { ...booking, services, unavailableDates: booking.unavailableDates ?? [] };
+
+      setOpts(d);
+      const wanted = state?.service?.toLowerCase();
+      const match = services.find((s) => s.name.toLowerCase() === wanted) || services[0];
+      setF((p) => ({ ...p, serviceId: p.serviceId || match?.id || "" }));
+      setStatus("ready");
+    } catch (err) {
+      console.error("Booking load error:", err);
+      setStatus("error");
+    }
   }, [state]);
   useEffect(() => { load(); }, [load]);
 
@@ -84,7 +101,7 @@ export default function Booking() {
     if (e.name || e.phone) return goTo(3);
 
     const payload = {
-      serviceId: service.id, serviceName: service.name, tagline: service.tagline, price: service.price,
+      serviceId: service.id, serviceName: service.name, price: service.price,
       date: f.date, venue: f.venue.trim(), guests: f.guests.trim(), trial: f.trial,
       name: f.name.trim(), phone: f.phone.trim(), notes: f.notes.trim(),
     };
@@ -105,13 +122,12 @@ export default function Booking() {
       <section className="book-hero">
         <div className="container">
           <nav className="crumbs" aria-label="Breadcrumb">
-            <Link to="/">Home</Link><ChevronRight size={13} /><span>Booking</span>
+            <Link to="/">Home</Link><ChevronRight size={13} /><span>{opts?.hero?.crumb ?? "Booking"}</span>
           </nav>
-          <p className="eyebrow dark">Reserve your Saanjh</p>
-          <h1 className="h1">Let’s hold space for<br />your beautiful day.</h1>
+          <p className="eyebrow dark">{opts?.hero?.eyebrow ?? "Reserve your Saanjh"}</p>
+          <h1 className="h1"><Lines text={opts?.hero?.title ?? "Let’s hold space for\nyour beautiful day."} /></h1>
           <p className="lead">
-            Tell us a little about your celebrations. This thoughtful three-step inquiry takes just a few minutes,
-            and our bridal team will personally confirm availability.
+            {opts?.hero?.text ?? "Tell us a little about your celebrations. This thoughtful three-step inquiry takes just a few minutes, and our bridal team will personally confirm availability."}
           </p>
         </div>
       </section>
@@ -129,14 +145,14 @@ export default function Booking() {
           {status === "ready" && (
             <div className={`book-grid${active === 3 ? " book-grid-step-three" : ""}`}>
               <div className="book-col" ref={stepsRef}>
-                <Stepper active={active} onGo={tryGo} />
+                <Stepper labels={opts.steps.map((st) => st.tab)} active={active} onGo={tryGo} />
 
                 {/* STEP 1 */}
                 {active === 1 && (
                   <section key="s1" className={`step-card slide-${dir}`}>
-                    <p className="eyebrow">Step 1 of 3</p>
-                    <h2>Choose the beauty story you need.</h2>
-                    <p className="step-sub">Select the primary service for your wedding date. You can add personal details in the next step.</p>
+                    <p className="eyebrow">Step 1 of {opts.steps.length}</p>
+                    <h2>{opts.steps[0].title}</h2>
+                    <p className="step-sub">{opts.steps[0].text}</p>
                     <div className="opts" role="radiogroup" aria-label="Service">
                       {opts.services.map((s) => (
                         <ServiceOption key={s.id} s={s} selected={s.id === f.serviceId} onSelect={(id) => put("serviceId", id)} />
@@ -145,7 +161,7 @@ export default function Booking() {
                     {errors.service && <em className="err">{errors.service}</em>}
                     <div className="step-actions">
                       <button type="button" className="btn btn-primary" onClick={next}>
-                        Continue to event details <ArrowRight size={15} />
+                        {opts.steps[0].button} <ArrowRight size={15} />
                       </button>
                     </div>
                   </section>
@@ -154,38 +170,38 @@ export default function Booking() {
                 {/* STEP 2 */}
                 {active === 2 && (
                   <section key="s2" className={`step-card slide-${dir}`}>
-                    <p className="eyebrow">Step 2 of 3</p>
-                    <h2>The shape of your celebration.</h2>
+                    <p className="eyebrow">Step 2 of {opts.steps.length}</p>
+                    <h2>{opts.steps[1].title}</h2>
                     <div className="ev-grid">
                       <div className="fld">
-                        <span className="fld-l">Wedding date</span>
-                        <Calendar value={f.date} onChange={(d) => put("date", d)} unavailable={opts.unavailableDates} note={opts.heldNote} />
+                        <span className="fld-l">{opts.event.dateLabel}</span>
+                        <Calendar value={f.date} onChange={(d) => put("date", d)} unavailable={opts.unavailableDates} note={opts.event.calendarNote} />
                         {errors.date && <em className="err">{errors.date}</em>}
                       </div>
                       <div className="stack">
                         <div className="fld">
-                          <label htmlFor="venue" className="fld-l">Venue / city</label>
+                          <label htmlFor="venue" className="fld-l">{opts.event.venueLabel}</label>
                           <div className="inp-ic">
                             <MapPin size={17} strokeWidth={1.6} />
-                            <input id="venue" className="inp" value={f.venue} onChange={set("venue")} placeholder="e.g. The Leela Palace, Udaipur" />
+                            <input id="venue" className="inp" value={f.venue} onChange={set("venue")} placeholder={opts.event.venuePh} />
                           </div>
                         </div>
                         <div className="fld">
-                          <label htmlFor="guests" className="fld-l">Mehndi guests</label>
-                          <input id="guests" className="inp" value={f.guests} onChange={set("guests")} placeholder="Around 35 guests" />
+                          <label htmlFor="guests" className="fld-l">{opts.event.guestsLabel}</label>
+                          <input id="guests" className="inp" value={f.guests} onChange={set("guests")} placeholder={opts.event.guestsPh} />
                         </div>
                         <div className="trial">
                           <div>
-                            <b>Add a trial session</b>
-                            <small>A calm rehearsal before your wedding week.</small>
+                            <b>{opts.event.trialTitle}</b>
+                            <small>{opts.event.trialText}</small>
                           </div>
-                          <Switch checked={f.trial} onChange={(v) => put("trial", v)} label="Add a trial session" />
+                          <Switch checked={f.trial} onChange={(v) => put("trial", v)} label={opts.event.trialTitle} />
                         </div>
                       </div>
                     </div>
                     <div className="step-actions split">
                       <button type="button" className="btn btn-outline" onClick={() => goTo(1)}><ArrowLeft size={15} /> Back</button>
-                      <button type="button" className="btn btn-primary" onClick={next}>Continue to your details <ArrowRight size={15} /></button>
+                      <button type="button" className="btn btn-primary" onClick={next}>{opts.steps[1].button} <ArrowRight size={15} /></button>
                     </div>
                   </section>
                 )}
@@ -193,35 +209,35 @@ export default function Booking() {
                 {/* STEP 3 */}
                 {active === 3 && (
                   <section key="s3" className={`step-card slide-${dir}`}>
-                    <p className="eyebrow">Step 3 of 3</p>
-                    <h2>A few details, just for us.</h2>
+                    <p className="eyebrow">Step 3 of {opts.steps.length}</p>
+                    <h2>{opts.steps[2].title}</h2>
                     <div className="name-row">
                       <div className="fld">
-                        <label htmlFor="name" className="fld-l">Your full name</label>
-                        <input id="name" className={`inp ${errors.name ? "bad" : ""}`} value={f.name} onChange={set("name")} placeholder="e.g. Ananya Mehra" autoComplete="name" />
+                        <label htmlFor="name" className="fld-l">{opts.you.nameLabel}</label>
+                        <input id="name" className={`inp ${errors.name ? "bad" : ""}`} value={f.name} onChange={set("name")} placeholder={opts.you.namePh} autoComplete="name" />
                         {errors.name && <em className="err">{errors.name}</em>}
                       </div>
                       <div className="fld">
-                        <label htmlFor="phone" className="fld-l">Phone / WhatsApp</label>
-                        <input id="phone" type="tel" inputMode="tel" className={`inp ${errors.phone ? "bad" : ""}`} value={f.phone} onChange={set("phone")} placeholder="+91 98 0000 0000" autoComplete="tel" />
+                        <label htmlFor="phone" className="fld-l">{opts.you.phoneLabel}</label>
+                        <input id="phone" type="tel" inputMode="tel" className={`inp ${errors.phone ? "bad" : ""}`} value={f.phone} onChange={set("phone")} placeholder={opts.you.phonePh} autoComplete="tel" />
                         {errors.phone && <em className="err">{errors.phone}</em>}
                       </div>
                     </div>
                     <div className="fld wide">
-                      <label htmlFor="notes" className="fld-l">Anything you’d like us to know?</label>
-                      <textarea id="notes" className="inp" rows="4" value={f.notes} onChange={set("notes")} placeholder="Your ceremonies, skin preferences, inspiration, or a note for the team…" />
+                      <label htmlFor="notes" className="fld-l">{opts.you.notesLabel}</label>
+                      <textarea id="notes" className="inp" rows="4" value={f.notes} onChange={set("notes")} placeholder={opts.you.notesPh} />
                     </div>
                     <div className="step-actions split step-actions-final">
                       <button type="button" className="btn btn-outline" onClick={() => goTo(2)}><ArrowLeft size={15} /> Back</button>
                       <button type="button" className="btn btn-primary" onClick={confirm} disabled={busy}>
-                        <MessageCircle size={16} strokeWidth={1.8} /> {busy ? "Sending…" : "Confirm on WhatsApp"}
+                        <MessageCircle size={16} strokeWidth={1.8} /> {busy ? "Sending…" : opts.summary.button}
                       </button>
                     </div>
                   </section>
                 )}
               </div>
 
-              <BookingSummary service={service} date={f.date} venue={f.venue} ready={ready} busy={busy} error={sendErr} onConfirm={confirm} />
+              <BookingSummary text={opts.summary} service={service} date={f.date} venue={f.venue} ready={ready} busy={busy} error={sendErr} onConfirm={confirm} />
             </div>
           )}
         </div>

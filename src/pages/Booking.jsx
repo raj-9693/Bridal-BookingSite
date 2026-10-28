@@ -7,6 +7,8 @@ import Calendar from "../components/booking/Calendar.jsx";
 import Switch from "../components/booking/Switch.jsx";
 import BookingSummary from "../components/booking/BookingSummary.jsx";
 import Lines from "../components/Lines.jsx";
+import BookingSkeleton from "../components/skeletons/BookingSkeleton.jsx";
+import { Sh, ShLines } from "../components/Shimmer.jsx";
 import { getDetaBooking } from "../api/Apiclients/BookingClient.js";
 import { submitBooking } from "../api/booking.js"; // POST (abhi pehle jaisa)
 import "../styles/booking.css";
@@ -124,17 +126,26 @@ export default function Booking() {
           <nav className="crumbs" aria-label="Breadcrumb">
             <Link to="/">Home</Link><ChevronRight size={13} /><span>{opts?.hero?.crumb ?? "Booking"}</span>
           </nav>
-          <p className="eyebrow dark">{opts?.hero?.eyebrow ?? "Reserve your Saanjh"}</p>
-          <h1 className="h1"><Lines text={opts?.hero?.title ?? "Let’s hold space for\nyour beautiful day."} /></h1>
-          <p className="lead">
-            {opts?.hero?.text ?? "Tell us a little about your celebrations. This thoughtful three-step inquiry takes just a few minutes, and our bridal team will personally confirm availability."}
-          </p>
+          {status === "loading" ? (
+            <div className="sh-lines" style={{ gap: 16 }} aria-hidden="true">
+              <Sh w={150} h={12} /><Sh w="min(520px, 92%)" h={50} r={10} /><Sh w="min(400px, 70%)" h={50} r={10} />
+              <ShLines n={2} h={14} w="min(640px, 100%)" last="60%" />
+            </div>
+          ) : (
+            <>
+              <p className="eyebrow dark">{opts?.hero?.eyebrow ?? "Reserve your Saanjh"}</p>
+              <h1 className="h1"><Lines text={opts?.hero?.title ?? "Let’s hold space for\nyour beautiful day."} /></h1>
+              <p className="lead">
+                {opts?.hero?.text ?? "Tell us a little about your celebrations. This thoughtful three-step inquiry takes just a few minutes, and our bridal team will personally confirm availability."}
+              </p>
+            </>
+          )}
         </div>
       </section>
 
       <section className="book-main">
         <div className="container">
-          {status === "loading" && <div className="book-skel" />}
+          {status === "loading" && <BookingSkeleton />}
           {status === "error" && (
             <div className="state">
               <p>Booking could not be loaded right now.</p>

@@ -1,0 +1,57 @@
+/* =====================================================================
+   SHIMMER (loading) — jab tak server se data nahi aata, text / image / cards
+   ki jagah ye halka chamakta hua placeholder dikhta hai.
+   ===================================================================== */
+@keyframes sh-move { to { background-position: -200% 0; } }
+
+.sh {
+  display: block;
+  background: linear-gradient(100deg, var(--blush) 30%, #fbefe6 50%, var(--blush) 70%);
+  background-size: 200% 100%;
+  animation: sh-move 1.4s linear infinite;
+}
+/* dark (maroon) section ke andar */
+.on-dark .sh, .sh.on-dark {
+  background: linear-gradient(100deg, rgba(255, 255, 255, .10) 30%, rgba(255, 255, 255, .22) 50%, rgba(255, 255, 255, .10) 70%);
+  background-size: 200% 100%;
+}
+.sh-lines { display: grid; gap: 10px; }
+.sh-lines.center { justify-items: center; }
+.sh-box { width: 100%; }
+.sh-row { display: flex; gap: 14px; flex-wrap: wrap; }
+.sh-center { display: flex; justify-content: center; }
+
+/* image jab tak load ho rahi ho (Photo component) */
+img.photo-loading {
+  background: linear-gradient(100deg, var(--blush) 30%, #fbefe6 50%, var(--blush) 70%);
+  background-size: 200% 100%;
+  animation: sh-move 1.4s linear infinite;
+  color: transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sh, img.photo-loading { animation: none; }
+}
+
+/* box ko poora bhar do (parent position:relative ho: jaise .arch) */
+.sh.fill { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 0; }
+/* skeleton card (white box) */
+.sk-card { background: #fffdfa; border: 1px solid var(--line); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+.sk-pad { padding: 22px 22px 26px; display: grid; gap: 12px; }
+.sk-card.sk-flat { box-shadow: none; }
+
+/* jahan background pehle se blush / band ho wahan shimmer ka rang thoda alag, taaki dikhe */
+.band .sh, .quick .sh, .rate-band .sh {
+  background: linear-gradient(100deg, #efdccf 30%, #f9eee6 50%, #efdccf 70%);
+  background-size: 200% 100%;
+}
+.values .sh, .glimpse-cap .sh, .photo-ph .sh {
+  background: linear-gradient(100deg, rgba(255, 255, 255, .55) 30%, rgba(255, 255, 255, .95) 50%, rgba(255, 255, 255, .55) 70%);
+  background-size: 200% 100%;
+}
+/* dark band: sabse upar (priority) */
+.on-dark .sh, .sh.on-dark {
+  background: linear-gradient(100deg, rgba(255, 255, 255, .10) 30%, rgba(255, 255, 255, .24) 50%, rgba(255, 255, 255, .10) 70%);
+  background-size: 200% 100%;
+}
+.sk-card .sh { background: linear-gradient(100deg, var(--blush) 30%, #fbefe6 50%, var(--blush) 70%); background-size: 200% 100%; }

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import PageHero from "../components/PageHero.jsx";
+import { ChipsSkeleton, ViewerSkeleton } from "../components/skeletons/GallerySkeleton.jsx";
 import FilterChips from "../components/gallery/FilterChips.jsx";
 import LookCard from "../components/gallery/LookCard.jsx";
 import LookViewer from "../components/gallery/LookViewer.jsx";
@@ -127,6 +128,7 @@ export default function Gallery() {
     <>
       <PageHero
         center
+        loading={status === "loading"}
         eyebrow={data?.intro?.eyebrow ?? "The Saanjh portfolio"}
         title={data?.intro?.title ?? "A little glimpse of forever."}
         text={
@@ -134,6 +136,7 @@ export default function Gallery() {
           "Explore the luminous details, soft rituals and personal beauty stories created for Saanjh brides across every celebration."
         }
       >
+        {status === "loading" && <ChipsSkeleton />}
         {status === "ready" && (
           <FilterChips items={categories} value={filter} onChange={choose} />
         )}
@@ -185,6 +188,7 @@ export default function Gallery() {
       </section>
 
       {/* In-focus viewer */}
+      {status === "loading" && <ViewerSkeleton />}
       {status === "ready" && current && (
         <section className="band focus" ref={viewerRef}>
           <div className="container">

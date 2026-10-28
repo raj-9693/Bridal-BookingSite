@@ -6,27 +6,40 @@ import Reveal from "../components/Reveal.jsx";
 import SectionHeading from "../components/SectionHeading.jsx";
 // import { stats, services, gallery, reviews, values } from "../data/content.js";
 import { getDetaHome} from "../api/Apiclients/HomeClient.js"
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import HomeSkeleton from "../components/skeletons/HomeSkeleton.jsx";
 
 
 
 
 export default function Home() {
+  const [homedeta, sethomedeta] = useState(null);
+  const [status, setStatus] = useState("loading"); // loading | ready | error
 
-  const [homedeta,sethomedeta]= useState('')
-
-
-  useEffect(() => {
-  const loadData = async () => {
+  const load = useCallback(async () => {
+    setStatus("loading");
     try {
       const response = await getDetaHome();
-      sethomedeta(response.data.Deta); 
+      if (!response?.data?.Deta) throw new Error("Home data was missing from the response");
+      sethomedeta(response.data.Deta);
+      setStatus("ready");
     } catch (err) {
       console.log("No response", err);
+      setStatus("error");
     }
-  };
-  loadData();
-}, []);
+  }, []);
+  useEffect(() => { load(); }, [load]);
+
+  // Data aane tak shimmer (text, image, cards sab jagah)
+  if (status === "loading") return <HomeSkeleton />;
+  if (status === "error") {
+    return (
+      <section className="section"><div className="container state">
+        <p>This page could not be loaded right now.</p>
+        <button className="btn btn-outline btn-sm" onClick={load}>Try again</button>
+      </div></section>
+    );
+  }
 
   return (
     <>

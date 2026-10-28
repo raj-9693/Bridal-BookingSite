@@ -8,6 +8,7 @@ import Lines from "../components/Lines.jsx";
 import PackageCard from "../components/services/PackageCard.jsx";
 import CompareTable from "../components/services/CompareTable.jsx";
 import Faq from "../components/services/Faq.jsx";
+import { PackagesSkeleton, CompareSkeleton, FaqSkeleton } from "../components/skeletons/ServicesSkeleton.jsx";
 import { getDetaServices } from "../api/Apiclients/ServicesClients.js";
 import "../styles/services.css";
 
@@ -66,6 +67,7 @@ export default function Services() {
     <>
       <PageHero
         center
+        loading={status === "loading"}
         eyebrow={data?.hero?.eyebrow ?? "The Saanjh bridal menu"}
         title={<Lines text={data?.hero?.title ?? "Beauty plans for every beautiful chapter."} />}
         text={data?.hero?.text ?? "Choose the artistry that meets your celebration. Every Saanjh booking begins with a thoughtful conversation about your vision, rituals and personal glow."}
@@ -75,7 +77,7 @@ export default function Services() {
       {/* PACKAGES */}
       <section className="section pkg-section">
         <div className="container">
-          {status === "loading" && <div className="pkg-grid">{[...Array(4)].map((_, i) => <div key={i} className="pkg-skel" />)}</div>}
+          {status === "loading" && <PackagesSkeleton />}
           {status === "error" && (
             <div className="state">
               <p>Packages could not be loaded right now.</p>
@@ -93,6 +95,7 @@ export default function Services() {
         </div>
       </section>
 
+      {status === "loading" && <CompareSkeleton />}
       {status === "ready" && hasComparison && (
         <section className="band">
           <div className="container">
@@ -111,6 +114,7 @@ export default function Services() {
         </section>
       )}
 
+      {status === "loading" && <FaqSkeleton />}
       {status === "ready" && data.faqs.length > 0 && (
         <section className="section">
           <div className="container faq-layout">

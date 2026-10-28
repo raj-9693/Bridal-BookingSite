@@ -4,7 +4,8 @@ import PageHero from "../components/PageHero.jsx";
 import ContactCard from "../components/contact/ContactCard.jsx";
 import StudioMap from "../components/contact/StudioMap.jsx";
 import Lines from "../components/Lines.jsx";
-import { getDetaContact } from "../api/Apiclients/ContactClient.js";
+import ContactSkeleton from "../components/skeletons/ContactSkeleton.jsx";
+import { getDetacontact } from "../api/Apiclients/ContactClient.js";
 import { submitEnquiry } from "../api/contact.js"; // POST (abhi pehle jaisa)
 import { todayYmd } from "../utils/dates.js";
 import "../styles/contact.css";
@@ -26,7 +27,7 @@ export default function Contact() {
   const load = useCallback(async () => {
     setStatus("loading");
     try {
-      const response = await getDetaContact();
+      const response = await getDetacontact();
       const contact = response?.data?.Contact;
       if (!contact) throw new Error("Contact data was missing from the response");
       setC(contact);
@@ -68,6 +69,7 @@ export default function Contact() {
       <div className="contact-top">
         <PageHero
           center
+          loading={status === "loading"}
           eyebrow={c?.hero?.eyebrow ?? "The Saanjh studio"}
           title={<Lines text={c?.hero?.title ?? "Let’s hold space for\nyour beautiful day."} />}
           text={c?.hero?.text ?? "A question, a date, a vision still taking shape — write to us and we’ll find the most thoughtful way forward together."}
@@ -75,7 +77,7 @@ export default function Contact() {
         <div className="divider short" aria-hidden><span>❧</span></div>
       </div>
 
-      {status === "loading" && <section className="contact-main"><div className="container"><div className="contact-skel" /></div></section>}
+      {status === "loading" && <ContactSkeleton />}
       {status === "error" && (
         <section className="contact-main"><div className="container state">
           <p>Contact details could not be loaded right now.</p>

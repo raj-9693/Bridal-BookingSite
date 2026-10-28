@@ -7,6 +7,8 @@ import Lines from "../components/Lines.jsx";
 import SectionHeading from "../components/SectionHeading.jsx";
 import CountUp from "../components/about/CountUp.jsx";
 import ArtistCard from "../components/about/ArtistCard.jsx";
+import AboutSkeleton from "../components/skeletons/AboutSkeleton.jsx";
+import { Sh, ShLines } from "../components/Shimmer.jsx";
 import { getDetaAbout } from "../api/Apiclients/AboutClient.js";
 import "../styles/about.css";
 
@@ -21,7 +23,7 @@ export default function About() {
     setStatus("loading");
     try {
       const response = await getDetaAbout();
-      const about = response?.data?.About;
+      const about = response?.data?.aboutdeta;
       if (!about) throw new Error("About data was missing from the response");
       setD(about);
       setStatus("ready");
@@ -37,15 +39,24 @@ export default function About() {
       {/* HERO */}
       <section className="about-hero">
         <div className="container">
-          <p className="eyebrow dark">{d?.hero?.eyebrow ?? "The hands behind the glow"}</p>
-          <h1 className="h1"><Lines text={d?.hero?.title ?? "Beauty that begins\nwith listening."} /></h1>
-          <p className="lead">
-            {d?.hero?.text ?? "Meet the artist behind Saanjh—a quiet presence for your wedding morning and a considered hand behind every luminous detail."}
-          </p>
+          {status === "loading" ? (
+            <div className="sh-lines center" style={{ gap: 16 }} aria-hidden="true">
+              <Sh w={190} h={12} /><Sh w="min(640px, 92%)" h={50} r={10} /><Sh w="min(420px, 70%)" h={50} r={10} />
+              <ShLines n={2} h={14} w="min(560px, 90%)" last="70%" center />
+            </div>
+          ) : (
+            <>
+              <p className="eyebrow dark">{d?.hero?.eyebrow ?? "The hands behind the glow"}</p>
+              <h1 className="h1"><Lines text={d?.hero?.title ?? "Beauty that begins\nwith listening."} /></h1>
+              <p className="lead">
+                {d?.hero?.text ?? "Meet the artist behind Saanjh—a quiet presence for your wedding morning and a considered hand behind every luminous detail."}
+              </p>
+            </>
+          )}
         </div>
       </section>
 
-      {status === "loading" && <section className="section"><div className="container"><div className="about-skel" /></div></section>}
+      {status === "loading" && <AboutSkeleton />}
       {status === "error" && (
         <section className="section"><div className="container state">
           <p>This page could not be loaded right now.</p>

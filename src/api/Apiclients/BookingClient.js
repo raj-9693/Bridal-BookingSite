@@ -1,7 +1,7 @@
 import Apiaxios from "../apiclient";
 
 // GET /Api/booking/getDeta  ->  response.data.Booking
-import Apiaxios from "../apiclient";
+
 
 
  export const getDetaBooking=async()=>{

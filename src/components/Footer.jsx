@@ -3,7 +3,10 @@ import { MapPin, Mail, Phone } from "lucide-react";
 import { FaInstagram, FaFacebook, FaYoutube } from "react-icons/fa";
 import Logo from "./Logo.jsx";
 import Lines from "./Lines.jsx";
-import { brand } from "../data/content.js";
+ import { brand } from "../data/content.js";
+ import {getDetaBottem} from "../../src/api/Apiclients/BottomClient.js"
+ console.log("kau karu kay ",getDetaBottem())
+
 
 // Server na mile to yahi purana text dikhta hai (footer kabhi khaali nahi hota).
 const defaultLinks = [
@@ -12,6 +15,8 @@ const defaultLinks = [
   { id: "f3", label: "Bride reviews", to: "/reviews" },
   { id: "f4", label: "Book a consultation", to: "/booking" },
 ];
+
+
 
 // Admin me link ka page chuna ho to wahi ("to"), warna label se andaza.
 const guessRoute = (label = "") => {
@@ -31,9 +36,9 @@ export default function Footer({
   linksTitle = "Quick links",
   links = defaultLinks,
   visitTitle = "Find us",
-  address = brand.address.join("\n"),
-  email = brand.email,
-  phone = brand.phone,
+  address = brand?.address.join("\n"),
+  email = brand?.email,
+  phone = brand?.phone,
   followTitle = "Stay close",
   followText = "Follow the latest Saanjh brides and quiet beauty rituals.",
   instagram = "#",
@@ -44,6 +49,7 @@ export default function Footer({
 }) {
   return (
     <footer className="footer">
+      
       <div className="container footer-grid">
         <div>
           <Logo />

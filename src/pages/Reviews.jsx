@@ -7,7 +7,8 @@ import Lines from "../components/Lines.jsx";
 import RatingSummary from "../components/reviews/RatingSummary.jsx";
 import TestimonialCard from "../components/reviews/TestimonialCard.jsx";
 import ChatCard from "../components/reviews/ChatCard.jsx";
-import { getDetaReviews } from "../api/Apiclients/ReviewsClient.js";
+import ReviewsSkeleton from "../components/skeletons/ReviewsSkeleton.jsx";
+import { getDetareviews } from "../api/Apiclients/ReviewsClient.js";
 import "../styles/reviews.css";
 
 export default function Reviews() {
@@ -17,7 +18,7 @@ export default function Reviews() {
   const load = useCallback(async () => {
     setStatus("loading");
     try {
-      const response = await getDetaReviews();
+      const response = await getDetareviews();
       const reviews = response?.data?.Reviews;
       if (!reviews) throw new Error("Reviews data was missing from the response");
 
@@ -42,15 +43,14 @@ export default function Reviews() {
     <>
       <PageHero
         center
+        loading={status === "loading"}
         eyebrow={data?.hero?.eyebrow ?? "Notes from our brides"}
         title={<Lines text={data?.hero?.title ?? "A thousand little moments, held with love."} />}
         text={data?.hero?.intro ?? "Every Saanjh morning begins with a conversation—and ends with a bride who feels beautifully, unmistakably herself."}
       />
       <div className="divider short" aria-hidden><span>❧</span></div>
 
-      {status === "loading" && (
-        <section className="section"><div className="container"><div className="rev-skel" /></div></section>
-      )}
+      {status === "loading" && <ReviewsSkeleton />}
       {status === "error" && (
         <section className="section"><div className="container state">
           <p>Reviews could not be loaded right now.</p>

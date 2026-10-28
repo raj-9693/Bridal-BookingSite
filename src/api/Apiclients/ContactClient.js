@@ -1,7 +1,7 @@
 import Apiaxios from "../apiclient";
 
 // GET /Api/contact/getDeta  ->  response.data.Contact
-import Apiaxios from "../apiclient";
+
 
 
  export const getDetacontact=async()=>{

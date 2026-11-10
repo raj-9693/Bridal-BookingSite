@@ -4,8 +4,8 @@ import { FaInstagram, FaFacebook, FaYoutube } from "react-icons/fa";
 import Logo from "./Logo.jsx";
 import Lines from "./Lines.jsx";
  import { brand } from "../data/content.js";
- import {getDetaBottem} from "../../src/api/Apiclients/BottomClient.js"
- console.log("kau karu kay ",getDetaBottem())
+
+
 
 
 // Server na mile to yahi purana text dikhta hai (footer kabhi khaali nahi hota).

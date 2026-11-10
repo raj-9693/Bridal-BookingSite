@@ -1,6 +1,6 @@
 import { Link, useLocation, useOutletContext } from "react-router-dom";
 import { CircleCheck, Calendar, MapPin, Users, Sparkles, MessageCircle, ArrowUpRight, ArrowRight } from "lucide-react";
-import { confirmationDummy } from "../data/booking.js";
+// import { confirmationDummy } from "../data/booking.js";
 import { fromPrice } from "../utils/format.js";
 import { formatLong } from "../utils/dates.js";
 import "../styles/booking.css";

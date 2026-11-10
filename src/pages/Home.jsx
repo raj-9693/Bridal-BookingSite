@@ -28,7 +28,9 @@ export default function Home() {
       setStatus("error");
     }
   }, []);
-  useEffect(() => { load(); }, [load]);
+  useEffect(() =>
+     { load();  },
+   [load]);
 
   // Data aane tak shimmer (text, image, cards sab jagah)
   if (status === "loading") return <HomeSkeleton />;
@@ -47,9 +49,9 @@ export default function Home() {
       <section className="hero">
         <div className="container hero-grid">
           <div className="hero-copy">
-          <p className="eyebrow line">{homedeta?.hero?.eyebrow || ""}</p>
-            <h1 className="h1 hero-title">{homedeta?.hero?.title||""}</h1>
-            <p className="lead">{homedeta?.hero?.subtitle || ""}</p>
+          <p className="eyebrow line">{homedeta?.hero?.eyebrow || "bahiBridal beauty by appointment"}</p>
+            <h1 className="h1 hero-title">{homedeta?.hero?.title||"Your wedding glow, lovingly crafted."}</h1>
+            <p className="lead">{homedeta?.hero?.subtitle || "Thoughtful bridal artistry for every ceremony, every photograph and every quiet moment you will remember. Saanjh creates a look that feels like you."}</p>
              {/* Thoughtful artistry for every ceremony, every photograph, every quiet moment you will remember.
               Saanjh creates luminous bridal looks rooted in you. */}
 
